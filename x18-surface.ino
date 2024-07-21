@@ -9,13 +9,10 @@
 
 #define TEXT_SIZE     3
 #define BUF_NAME_SIZE 10
+#define LEVEL_OFFSET  5
 
-#define LOAD  A2
-#define CLK   A0
-#define DIN   A1
-
-#define UP    3
-#define DOWN  4
+#define TRUE          1 
+#define FALSE         0
 
 #define CHANNEL1_1    4
 #define CHANNEL1_2    5
@@ -44,36 +41,43 @@ unsigned int mixer_port = 10024;
 
 EthernetUDP udp;
 
+#define TIMEOUT    100
+static int screen_timer = TIMEOUT;
+
+typedef struct {
+    int   value;
+    int   led_enable;
+    int   button_in;
+    bool  pressed;
+} Button;
+
 typedef struct {
     char    name[BUF_NAME_SIZE];
-    bool    solo;
-    int     solo_in;
-    int     solo_led;
-    bool    mute;
-    int     mute_in;
-    int     mute_led;
-    float   level;
+    Button  solo;
+    Button  mute;
+    int     level;
     int     channel_id;
     int     fader;
     int     motor[2];
 } Channel;
 
-Channel ch1 = {
-    "CH1",
-    0, CHANNEL1_SOLO, CHANNEL1_SOLO_LED, 
-    0, CHANNEL1_MUTE, CHANNEL1_MUTE_LED, 
-    0.0, 1, CHANNEL1_SLIDER, {CHANNEL1_1, CHANNEL1_2}
+Channel ch1 = { "CH1",
+    { FALSE, CHANNEL1_SOLO_LED, CHANNEL1_SOLO, FALSE }, 
+    { FALSE, CHANNEL1_MUTE_LED, CHANNEL1_MUTE, FALSE }, 
+    0, 1, CHANNEL1_SLIDER, {CHANNEL1_1, CHANNEL1_2}
 };
+
+void init_button(Button b) {
+    pinMode(b.led_enable, OUTPUT);
+    pinMode(b.button_in, INPUT_PULLUP);
+}
 
 void init_channel(Channel ch) {
     pinMode(ch.motor[0], OUTPUT);
     pinMode(ch.motor[1], OUTPUT);
 
-    pinMode(ch.solo_led, OUTPUT);
-    pinMode(ch.mute_led, OUTPUT);
-
-    pinMode(ch.solo_in, INPUT_PULLUP);
-    pinMode(ch.mute_in, INPUT_PULLUP);
+    init_button(ch.solo);
+    init_button(ch.mute);
 }
 
 void setup() {
@@ -89,9 +93,7 @@ void setup() {
     }
 
     display.display();
-    delay(2000);
-
-    draw_char(ch1.name);
+    delay(500);
     Serial.println("Setup Complete");
 }
 
@@ -99,7 +101,7 @@ void draw_char(const char *text) {
     display.clearDisplay();
     display.setTextSize(TEXT_SIZE);
     display.setTextColor(SSD1306_WHITE);
-    display.cp437(true);
+    display.cp437(TRUE);
 
     int x, y, width, height;
     display.getTextBounds(text, 0, 0, &x, &y, &width, &height);
@@ -126,53 +128,78 @@ void update_channel(Channel *ch) {
     }
     name[2] = '\0';
 
-    set_channel_level(name, (float)level / 1024);
+    if (level < ch->level - LEVEL_OFFSET || level > ch->level + LEVEL_OFFSET) {
+        set_channel_level(name, (float)level / 1024);
+        ch->level = level;
 
-    if (digitalRead(ch->solo_in) == LOW) {
+        screen_timer = TIMEOUT;
+    }
+
+    int solo = digitalRead(ch->solo.button_in);
+    if (solo == LOW && !ch->solo.pressed) {
         Serial.println("Solo click");
-        ch->solo = !ch->solo;
-        digitalWrite(ch->solo_led, ch->solo ? HIGH : LOW);
+        ch->solo.pressed = 1;
+        ch->solo.value = !ch->solo.value;
+        digitalWrite(ch->solo.led_enable, ch->solo.value ? HIGH : LOW);
 
         char addr_solo[] = "/-stat/solosw/01";
         addr_solo[14] = name[0];
         addr_solo[15] = name[1];
 
-        set_int(addr_solo, ch->solo);
+        set_int(addr_solo, ch->solo.value);
+
+        screen_timer = TIMEOUT;
+    } else if (solo == HIGH) {
+        ch->solo.pressed = FALSE;
     }
 
-    if (digitalRead(ch->mute_in) == LOW) {
+    int mute = digitalRead(ch->mute.button_in);
+    if (mute == LOW && !ch->mute.pressed) {
         Serial.println("Mute click");
-        ch->mute = !ch->mute;
-        digitalWrite(ch->mute_led, ch->mute ? LOW : HIGH);
+        ch->mute.pressed = TRUE;
+        ch->mute.value = !ch->mute.value;
+        digitalWrite(ch->mute.led_enable, ch->mute.value ? LOW : HIGH);
 
         char addr_mute[] = "/ch/01/mix/on";
         addr_mute[4] = name[0];
         addr_mute[5] = name[1];
 
-        set_int(addr_mute, ch->mute);
+        set_int(addr_mute, ch->mute.value);
+
+        screen_timer = TIMEOUT;
+    } else if (mute == HIGH) {
+        ch->mute.pressed = FALSE;
     }
 
-    char addr_name[] = "/ch/01/config/name";
-    addr_name[4] = name[0];
-    addr_name[5] = name[1];
+    if (screen_timer > 0) {
+        char addr_name[] = "/ch/01/config/name";
+        addr_name[4] = name[0];
+        addr_name[5] = name[1];
 
-    char buf[BUF_NAME_SIZE];
-    memset(buf, '\0', sizeof buf);
+        char buf[BUF_NAME_SIZE];
+        memset(buf, '\0', sizeof buf);
 
-    if (get_string(addr_name, buf, BUF_NAME_SIZE) < 0) {
-        Serial.print(addr_name);
-        Serial.println(" name is too long");
-    }
+        if (get_string(addr_name, buf, BUF_NAME_SIZE) < 0) {
+            Serial.print(addr_name);
+            Serial.println(" name is too long");
+        }
 
-    if (strncmp(buf, ch->name, BUF_NAME_SIZE)) {
-        memcpy(ch->name, buf, BUF_NAME_SIZE);
-        draw_char(ch->name);
+        if (strncmp(buf, ch->name, BUF_NAME_SIZE)) {
+            memcpy(ch->name, buf, BUF_NAME_SIZE);
+            draw_char(ch->name);
+        }
+    } else {
+        display.clearDisplay();
+        display.display();
+        memset(ch->name, '\0', BUF_NAME_SIZE);
     }
 }
 
 void loop() {
     update_channel(&ch1);
-    delay(20);
+    if (screen_timer > 0) {
+      screen_timer--;
+    }
 }
 
 float get_channel_level(const char *channel) {
