@@ -11,6 +11,9 @@
 #define BUF_NAME_SIZE 10
 #define LEVEL_OFFSET  5
 
+#define WITHIN(a, x, y)   ((x) <= (a) && (a) <= (y))
+#define DIST(a, x, r)     WITHIN(a, (x) - (r), (x) + (r))
+
 #define TRUE          1 
 #define FALSE         0
 
@@ -55,16 +58,17 @@ typedef struct {
     char    name[BUF_NAME_SIZE];
     Button  solo;
     Button  mute;
-    int     level;
+    int     fader_level;
+    int     fader_in;
     int     channel_id;
-    int     fader;
-    int     motor[2];
+    int     fader_motor1;
+    int     fader_motor2;
 } Channel;
 
 Channel ch1 = { "CH1",
     { FALSE, CHANNEL1_SOLO_LED, CHANNEL1_SOLO, FALSE }, 
     { FALSE, CHANNEL1_MUTE_LED, CHANNEL1_MUTE, FALSE }, 
-    0, 1, CHANNEL1_SLIDER, {CHANNEL1_1, CHANNEL1_2}
+    0, CHANNEL1_SLIDER, 1, CHANNEL1_1, CHANNEL1_2
 };
 
 void init_button(Button b) {
@@ -73,8 +77,8 @@ void init_button(Button b) {
 }
 
 void init_channel(Channel ch) {
-    pinMode(ch.motor[0], OUTPUT);
-    pinMode(ch.motor[1], OUTPUT);
+    pinMode(ch.fader_motor1, OUTPUT);
+    pinMode(ch.fader_motor2, OUTPUT);
 
     init_button(ch.solo);
     init_button(ch.mute);
@@ -115,9 +119,27 @@ void draw_char(const char *text) {
     display.display();
 }
 
+void set_fader_level(Channel *ch, int level) {
+    int fader_level = analogRead(ch->fader_in);
+
+    while (fader_level != level) {
+        if (fader_level > level) {
+            digitalWrite(ch->fader_motor1, HIGH);
+            digitalWrite(ch->fader_motor2, LOW);
+        } else if (fader_level < level) {
+            digitalWrite(ch->fader_motor1, LOW);
+            digitalWrite(ch->fader_motor2, HIGH);
+        }
+
+        fader_level = analogRead(ch->fader_in);
+    }
+
+    digitalWrite(ch->fader_motor1, LOW);
+    digitalWrite(ch->fader_motor2, LOW);
+}
+
 void update_channel(Channel *ch) {
     char name[3];
-    int level = analogRead(ch->fader);
 
     if (ch->channel_id < 10) {
         name[0] = '0';
@@ -128,11 +150,22 @@ void update_channel(Channel *ch) {
     }
     name[2] = '\0';
 
-    if (level < ch->level - LEVEL_OFFSET || level > ch->level + LEVEL_OFFSET) {
-        set_channel_level(name, (float)level / 1024);
-        ch->level = level;
+    int fader_level = analogRead(ch->fader_in);
+    int digital_level = 1024 * get_channel_level(name);
+
+    if (!DIST(fader_level, ch->fader_level, LEVEL_OFFSET)) {
+        // physical fader has moved
+        set_channel_level(name, (float)fader_level / 1024);
+        ch->fader_level = fader_level;
 
         screen_timer = TIMEOUT;
+    } else if (!DIST(digital_level, ch->fader_level, LEVEL_OFFSET)) {
+        // digital fader has moved
+        Serial.print(digital_level);
+        Serial.print(" ");
+        Serial.println(ch->fader_level);
+        set_fader_level(ch, digital_level);
+        ch->fader_level = digital_level;
     }
 
     int solo = digitalRead(ch->solo.button_in);
