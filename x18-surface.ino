@@ -17,16 +17,20 @@
 #define TRUE          1 
 #define FALSE         0
 
-#define CHANNEL1_1    4
-#define CHANNEL1_2    5
-#define CHANNEL2_1    6
-#define CHANNEL2_2    7
+#define CHANNEL1_1    46
+#define CHANNEL1_2    47
 
 #define CHANNEL1_SLIDER      A0
 #define CHANNEL1_SOLO        30
 #define CHANNEL1_MUTE        31
 #define CHANNEL1_SOLO_LED    22
 #define CHANNEL1_MUTE_LED    23
+
+#define LOWER_LAYER_IN       40
+#define LOWER_LAYER_LED      42
+
+#define UPPER_LAYER_IN       41
+#define UPPER_LAYER_LED      43
 
 #define SCREEN_WIDTH  128
 #define SCREEN_HEIGHT 64
@@ -71,6 +75,9 @@ Channel ch1 = { "CH1",
     0, CHANNEL1_SLIDER, 1, CHANNEL1_1, CHANNEL1_2
 };
 
+Button lower = { TRUE, LOWER_LAYER_LED, LOWER_LAYER_IN, FALSE };
+Button upper = { FALSE, UPPER_LAYER_LED, UPPER_LAYER_IN, FALSE };
+
 void init_button(Button b) {
     pinMode(b.led_enable, OUTPUT);
     pinMode(b.button_in, INPUT_PULLUP);
@@ -90,6 +97,8 @@ void setup() {
     udp.begin(local_port);
 
     init_channel(ch1);
+    init_button(lower);
+    init_button(upper);
 
     if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
         Serial.println(F("SSD1306 allocation failed"));
@@ -122,7 +131,7 @@ void draw_char(const char *text) {
 void set_fader_level(Channel *ch, int level) {
     int fader_level = analogRead(ch->fader_in);
 
-    while (fader_level != level) {
+    while (!DIST(fader_level, level, LEVEL_OFFSET)) {
         if (fader_level > level) {
             digitalWrite(ch->fader_motor1, HIGH);
             digitalWrite(ch->fader_motor2, LOW);
@@ -136,6 +145,21 @@ void set_fader_level(Channel *ch, int level) {
 
     digitalWrite(ch->fader_motor1, LOW);
     digitalWrite(ch->fader_motor2, LOW);
+}
+
+int update_button(Button *b) {
+    int state = digitalRead(b->button_in);
+
+    if (state == LOW && !b->pressed) {
+        //Serial.println("Button press");
+        b->pressed = TRUE;
+
+        return TRUE;
+    } else if (state == HIGH) {
+        b->pressed = FALSE;
+    }
+    
+    return FALSE;
 }
 
 void update_channel(Channel *ch) {
@@ -159,49 +183,41 @@ void update_channel(Channel *ch) {
         ch->fader_level = fader_level;
 
         screen_timer = TIMEOUT;
-    } else if (!DIST(digital_level, ch->fader_level, LEVEL_OFFSET)) {
-        // digital fader has moved
-        Serial.print(digital_level);
-        Serial.print(" ");
-        Serial.println(ch->fader_level);
-        set_fader_level(ch, digital_level);
-        ch->fader_level = digital_level;
+    } else {
+        if (!DIST(digital_level, ch->fader_level, LEVEL_OFFSET)) {
+            // digital fader has moved
+            set_fader_level(ch, digital_level);
+            ch->fader_level = digital_level;
+        }
     }
 
-    int solo = digitalRead(ch->solo.button_in);
-    if (solo == LOW && !ch->solo.pressed) {
-        Serial.println("Solo click");
-        ch->solo.pressed = 1;
+    char addr_solo[] = "/-stat/solosw/01";
+    addr_solo[14] = name[0];
+    addr_solo[15] = name[1];
+
+    ch->solo.value = get_int(addr_solo);
+
+    char addr_mute[] = "/ch/01/mix/on";
+    addr_mute[4] = name[0];
+    addr_mute[5] = name[1];
+
+    ch->mute.value = !get_int(addr_mute);
+
+    if (update_button(&ch->solo)) {
+        //Serial.println("Solo click");
         ch->solo.value = !ch->solo.value;
-        digitalWrite(ch->solo.led_enable, ch->solo.value ? HIGH : LOW);
-
-        char addr_solo[] = "/-stat/solosw/01";
-        addr_solo[14] = name[0];
-        addr_solo[15] = name[1];
-
         set_int(addr_solo, ch->solo.value);
 
         screen_timer = TIMEOUT;
-    } else if (solo == HIGH) {
-        ch->solo.pressed = FALSE;
     }
 
-    int mute = digitalRead(ch->mute.button_in);
-    if (mute == LOW && !ch->mute.pressed) {
-        Serial.println("Mute click");
-        ch->mute.pressed = TRUE;
+    if (update_button(&ch->mute)) {
+        //Serial.println("Mute click");
         ch->mute.value = !ch->mute.value;
-        digitalWrite(ch->mute.led_enable, ch->mute.value ? LOW : HIGH);
 
-        char addr_mute[] = "/ch/01/mix/on";
-        addr_mute[4] = name[0];
-        addr_mute[5] = name[1];
-
-        set_int(addr_mute, ch->mute.value);
+        set_int(addr_mute, !ch->mute.value);
 
         screen_timer = TIMEOUT;
-    } else if (mute == HIGH) {
-        ch->mute.pressed = FALSE;
     }
 
     if (screen_timer > 0) {
@@ -229,7 +245,27 @@ void update_channel(Channel *ch) {
 }
 
 void loop() {
+    int upper_state = update_button(&upper);
+    int lower_state = update_button(&lower);
+    
+    if (upper_state) {
+        upper.value = TRUE;
+        lower.value = FALSE;
+        ch1.channel_id = 8;
+    } else if (lower_state) {
+        upper.value = FALSE;
+        lower.value = TRUE;
+        ch1.channel_id = 1;
+    }
+
+    digitalWrite(upper.led_enable, upper.value);
+    digitalWrite(lower.led_enable, lower.value);
+    
     update_channel(&ch1);
+
+    digitalWrite(ch1.solo.led_enable, ch1.solo.value);
+    digitalWrite(ch1.mute.led_enable, ch1.mute.value);
+
     if (screen_timer > 0) {
       screen_timer--;
     }

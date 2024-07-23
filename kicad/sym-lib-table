@@ -1,0 +1,4 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "mixer")(type "KiCad")(uri "${KIPRJMOD}/mixer.kicad_sym")(options "")(descr ""))
+)

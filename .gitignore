@@ -1,3 +1,7 @@
 *.zip
 *.FCBak
 *.pdf
+*.3mf
+*.stl
+kicad/mixer-backups
+kicad/*.bak
