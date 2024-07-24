@@ -4671,7 +4671,6 @@
 		)
 	)
 	(symbol
-		(lib_name "mixer:motorised_linear_potentiometer")
 		(lib_id "mixer:motorised_linear_potentiometer")
 		(at 207.01 34.29 0)
 		(unit 1)
@@ -4932,7 +4931,6 @@
 		)
 	)
 	(symbol
-		(lib_name "mixer:motorised_linear_potentiometer")
 		(lib_id "mixer:motorised_linear_potentiometer")
 		(at 146.05 34.29 0)
 		(unit 1)
@@ -5014,7 +5012,6 @@
 		)
 	)
 	(symbol
-		(lib_name "mixer:motorised_linear_potentiometer")
 		(lib_id "mixer:motorised_linear_potentiometer")
 		(at 219.71 34.29 0)
 		(unit 1)
@@ -5229,7 +5226,6 @@
 		)
 	)
 	(symbol
-		(lib_name "mixer:motorised_linear_potentiometer")
 		(lib_id "mixer:motorised_linear_potentiometer")
 		(at 158.75 34.29 0)
 		(unit 1)
@@ -5556,7 +5552,6 @@
 		)
 	)
 	(symbol
-		(lib_name "mixer:motorised_linear_potentiometer")
 		(lib_id "mixer:motorised_linear_potentiometer")
 		(at 83.82 34.29 0)
 		(unit 1)
@@ -5884,7 +5879,6 @@
 		)
 	)
 	(symbol
-		(lib_name "mixer:motorised_linear_potentiometer")
 		(lib_id "mixer:motorised_linear_potentiometer")
 		(at 96.52 34.29 0)
 		(unit 1)
@@ -5966,7 +5960,6 @@
 		)
 	)
 	(symbol
-		(lib_name "mixer:motorised_linear_potentiometer")
 		(lib_id "mixer:motorised_linear_potentiometer")
 		(at 265.43 33.02 0)
 		(unit 1)
@@ -6161,7 +6154,6 @@
 		)
 	)
 	(symbol
-		(lib_name "mixer:motorised_linear_potentiometer")
 		(lib_id "mixer:motorised_linear_potentiometer")
 		(at 278.13 33.02 0)
 		(unit 1)
