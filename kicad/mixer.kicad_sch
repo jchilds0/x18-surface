@@ -3118,7 +3118,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x10_P2.54mm_Horizontal"
+		(property "Footprint" ""
 			(at 222.25 18.034 0)
 			(effects
 				(font
@@ -3301,7 +3301,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x10_P2.54mm_Horizontal"
+		(property "Footprint" ""
 			(at 222.25 43.434 0)
 			(effects
 				(font
@@ -3485,7 +3485,7 @@
 				)
 			)
 		)
-		(property "Footprint" "arduino-library:Arduino_Mega2560_R3_Shield"
+		(property "Footprint" "PCM_arduino-library:Arduino_Mega2560_R3_Shield"
 			(at 132.08 168.91 0)
 			(effects
 				(font
@@ -3819,7 +3819,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x10_P2.54mm_Horizontal"
+		(property "Footprint" ""
 			(at 196.596 78.74 0)
 			(effects
 				(font
