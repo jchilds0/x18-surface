@@ -32,6 +32,16 @@
 #define UPPER_LAYER_IN       41
 #define UPPER_LAYER_LED      43
 
+#define DIN     50 
+#define CLK     51
+#define LOAD    52
+
+#define DECODE_MODE          0x09
+#define INTENSITY            0x0a
+#define SCAN_LIMIT           0x0b
+#define SHUTDOWN             0x0c
+#define DISPLAY_TEST         0x0f
+
 #define SCREEN_WIDTH  128
 #define SCREEN_HEIGHT 64
 
@@ -91,6 +101,14 @@ void init_channel(Channel ch) {
     init_button(ch.mute);
 }
 
+void max7219_message(byte addr, byte data) {
+    digitalWrite(LOAD, LOW);
+    digitalWrite(CLK, LOW);
+    shiftOut(DIN, CLK, MSBFIRST, addr);
+    shiftOut(DIN, CLK, MSBFIRST, data);
+    digitalWrite(LOAD, HIGH);
+}
+
 void setup() {
     Serial.begin(9600);
     Ethernet.begin(mac, ip);
@@ -108,6 +126,41 @@ void setup() {
     display.display();
     delay(500);
     Serial.println("Setup Complete");
+
+    pinMode(DIN, OUTPUT);
+    pinMode(LOAD, OUTPUT);
+    pinMode(CLK, OUTPUT);
+
+    delay(100);
+
+    digitalWrite(LOAD, HIGH);
+    max7219_message(SHUTDOWN, 0);
+
+    delay(100);
+
+    max7219_message(SCAN_LIMIT, 1);
+    //max7219_message(DECODE_MODE, 0);
+    max7219_message(SHUTDOWN, 1);
+    //max7219_message(DISPLAY_TEST, 0);
+
+    delay(20);
+
+    //max7219_message(INTENSITY, 0x0F);
+
+    for (int i = 1; i <= 8; i++) {
+        max7219_message(i, 0x0);
+    }
+
+    Serial.println("cleared");
+
+    delay(100);
+    return;
+
+    for (int i = 0; i < 255; i++) {
+        max7219_message(0x01, i);
+        Serial.println(i);
+        delay(1000);
+    }
 }
 
 void draw_char(const char *text) {
@@ -245,6 +298,8 @@ void update_channel(Channel *ch) {
 }
 
 void loop() {
+    return;
+
     int upper_state = update_button(&upper);
     int lower_state = update_button(&lower);
     
