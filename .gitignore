@@ -1,7 +1,9 @@
 *.zip
-*.FCBak
-*.pdf
-*.3mf
-*.stl
+docs/*.pdf
+models/*.FCBak
+models/*.3mf
+models/*.stl
 kicad/mixer-backups
 kicad/*.bak
+x18-surface/build/
+x18-surface/sdkconfig/
