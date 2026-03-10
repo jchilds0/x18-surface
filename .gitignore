@@ -7,3 +7,4 @@ kicad/mixer-backups
 kicad/*.bak
 x18-surface/build/
 x18-surface/sdkconfig/
+x18-surface/.cache/

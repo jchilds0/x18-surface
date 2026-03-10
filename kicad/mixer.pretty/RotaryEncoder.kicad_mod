@@ -1,7 +1,7 @@
 (footprint "RotaryEncoder"
-	(version 20240108)
+	(version 20241229)
 	(generator "pcbnew")
-	(generator_version "8.0")
+	(generator_version "9.0")
 	(layer "F.Cu")
 	(property "Reference" "REF**"
 		(at 0 11 0)
@@ -20,19 +20,6 @@
 		(unlocked yes)
 		(layer "F.Fab")
 		(uuid "e6da682a-8ea1-443b-a505-649a63834fa2")
-		(effects
-			(font
-				(size 1 1)
-				(thickness 0.15)
-			)
-		)
-	)
-	(property "Footprint" ""
-		(at 0 11.5 0)
-		(unlocked yes)
-		(layer "F.Fab")
-		(hide yes)
-		(uuid "6850d4eb-6f7a-4871-97db-ba5a4dc9dfcb")
 		(effects
 			(font
 				(size 1 1)
@@ -74,7 +61,7 @@
 			(width 0.1)
 			(type default)
 		)
-		(fill none)
+		(fill no)
 		(layer "F.SilkS")
 		(uuid "581b8b41-b67e-47a4-a715-b60c418fa1c8")
 	)
@@ -96,7 +83,7 @@
 			(width 0.1)
 			(type default)
 		)
-		(fill none)
+		(fill no)
 		(layer "F.SilkS")
 		(uuid "1a231939-8c04-49c3-ad83-0a98d5df5494")
 	)
@@ -121,7 +108,7 @@
 		(uuid "017adf8f-ac63-4aee-9b26-381da70d8a4b")
 	)
 	(pad "2" thru_hole circle
-		(at 5 5.5)
+		(at 0 5.5)
 		(size 1.524 1.524)
 		(drill 0.762)
 		(layers "*.Cu" "*.Mask")
@@ -129,11 +116,12 @@
 		(uuid "e756b58f-1311-4135-a7e9-5b2a270a98f5")
 	)
 	(pad "3" thru_hole circle
-		(at 0 5.5)
+		(at 5 5.5)
 		(size 1.524 1.524)
 		(drill 0.762)
 		(layers "*.Cu" "*.Mask")
 		(remove_unused_layers no)
 		(uuid "a62a2aef-d5de-428c-9a03-52b06543ae7e")
 	)
+	(embedded_fonts no)
 )
