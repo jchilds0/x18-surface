@@ -45,7 +45,7 @@
 #define I2C_MASTER_SDA_IO         GPIO_NUM_21
 #define I2C_MASTER_SCL_IO         GPIO_NUM_22
 #define I2C_MASTER_FREQ_HZ        400 * 1000
-#define I2C_MASTER_TIMEOUT_MS     1000
+#define I2C_MASTER_TIMEOUT_MS     10
 
 #define MCP23017_DEVICE_ADDR      0x20
 #define MCP23017_IODIRA           0x00
@@ -91,7 +91,6 @@ void app_main(void) {
         .sda_io_num = I2C_MASTER_SDA_IO,
         .scl_io_num = I2C_MASTER_SCL_IO,
         .glitch_ignore_cnt = 7,
-        .flags.enable_internal_pullup = true,
     };
 
     ESP_ERROR_CHECK(i2c_new_master_bus(&i2c_mst_cfg, &bus_handle));
@@ -108,7 +107,7 @@ void app_main(void) {
 
     esp_timer_handle_t timer;
     ESP_ERROR_CHECK(esp_timer_create(&timercfg, &timer));
-    ESP_ERROR_CHECK(esp_timer_start_periodic(timer, 10 * 1000));
+    ESP_ERROR_CHECK(esp_timer_start_periodic(timer, 5 * 1000));
 
     esp_timer_create_args_t timercfg2 = {
         .name = "change_led",
@@ -213,10 +212,10 @@ void mcp23017_init(void) {
     ESP_ERROR_CHECK(i2c_master_transmit(dev_handle, iocon, sizeof(iocon), I2C_MASTER_TIMEOUT_MS));
 
     /* set IODIR */
-    uint8_t iodirA[] = {MCP23017_IODIRA, 0xFF};
+    uint8_t iodirA[] = {MCP23017_IODIRA, 0x0F};
     ESP_ERROR_CHECK(i2c_master_transmit(dev_handle, iodirA, sizeof(iodirA), I2C_MASTER_TIMEOUT_MS));
 
-    uint8_t iodirB[] = {MCP23017_IODIRB, 0x00};
+    uint8_t iodirB[] = {MCP23017_IODIRB, 0x0F};
     ESP_ERROR_CHECK(i2c_master_transmit(dev_handle, iodirB, sizeof(iodirB), I2C_MASTER_TIMEOUT_MS));
 
     ESP_LOGI(TAG_MCP23017, "init complete");
@@ -230,28 +229,38 @@ static const int8_t transition_table[16] = {
 };
 
 void mcp23017_read(void* params) {
-    uint8_t ctrl = MCP23017_GPIOA;
-    static uint8_t reg_a = 0;
+    esp_err_t res;
+    uint8_t ctrl_a = MCP23017_GPIOA;
+    uint8_t ctrl_b = MCP23017_GPIOB;
+    uint8_t reg_a = 0;
+    uint8_t reg_b = 0;
+
     static uint8_t prev_state = 0;
     static int8_t encval = 0;
 
-    esp_err_t res = i2c_master_transmit_receive(
-        dev_handle, 
-        &ctrl, 1, 
-        &reg_a, 1, 
-        I2C_MASTER_TIMEOUT_MS
-    );
+    res = i2c_master_transmit_receive(dev_handle, &ctrl_a, 1, &reg_a, 1, I2C_MASTER_TIMEOUT_MS);
     if (res != ESP_OK) {
         ESP_LOGE(TAG_MCP23017, "error getting register a: %s", esp_err_to_name(res));
         return;
     }
 
-    led_t led = {.digit = 7, .segments = (reg_a & 0x0F) << 3};
-    xQueueSend(led_queue, &led, portMAX_DELAY);
+    res = i2c_master_transmit_receive(dev_handle, &ctrl_b, 1, &reg_b, 1, I2C_MASTER_TIMEOUT_MS);
+    if (res != ESP_OK) {
+        ESP_LOGE(TAG_MCP23017, "error getting register b: %s", esp_err_to_name(res));
+        return;
+    }
+
+    uint8_t leds[] = {MCP23017_GPIOB, reg_b << 4};
+    res = i2c_master_transmit(dev_handle, leds, 2, I2C_MASTER_TIMEOUT_MS);
+    if (res != ESP_OK) {
+        ESP_LOGE(TAG_MCP23017, "error getting updating b: %s", esp_err_to_name(res));
+        return;
+    }
 
     uint32_t current_state = (reg_a >> 4) & 0b0011;
     uint8_t index = (prev_state << 2) | current_state;
     encval += transition_table[index];
+    prev_state = current_state;
 
     if (encval > 3) {
         encval = 0;
