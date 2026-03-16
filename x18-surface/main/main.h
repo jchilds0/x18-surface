@@ -9,6 +9,7 @@
 #include "driver/gpio.h"
 #include "driver/i2c_types.h"
 #include "driver/spi_master.h"
+#include "esp_err.h"
 #include "esp_event_base.h"
 #include "freertos/idf_additions.h"
 #include "hal/spi_types.h"
@@ -77,19 +78,14 @@ typedef struct button_s {
 } button_t;
 
 /* mcp23017.c */
-typedef void (*msg_callback_t)(uint8_t reg, uint8_t data);
-
 typedef struct mcp23017_msg_s {
-    bool read;
     uint8_t reg;
     uint8_t data;
-    msg_callback_t cb;
 } mcp23017_msg_t;
 
 void x18_mcp23017_init(i2c_master_bus_handle_t bus_handle);
-void x18_mcp23017_start(void);
-void x18_mcp23017_read(void* params);
-void x18_mcp23017_send(mcp23017_msg_t msg);
+esp_err_t x18_mcp23017_write(mcp23017_msg_t);
+esp_err_t x18_mcp23017_read(uint8_t reg, esp_event_base_t event_base, int32_t event_id);
 
 /* motors.c */
 typedef struct motor_s {

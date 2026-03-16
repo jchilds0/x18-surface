@@ -48,17 +48,11 @@ void app_main(void) {
 
     /* initialise components */
     x18_max7219_init(spi_host);
-    x18_max7219_start();
-
-    for (;;) {
-        SLEEP(1000);
-    }
     x18_mcp23017_init(bus_handle);
     x18_motor_init();
 
     /* start components */
     x18_max7219_start();
-    x18_mcp23017_start();
 
     for (;;) {
         SLEEP(1000);

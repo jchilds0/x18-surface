@@ -17,8 +17,8 @@
 #include "portmacro.h"
 #include <pthread.h>
 
-static void x18_max7219_change_led(void* params);
-static void x18_max7219_handler(void* event_handler_arg, esp_event_base_t event_base, int32_t event_id, void* event_data);
+static void max7219_change_led(void* params);
+static void max7219_handler(void* event_args, esp_event_base_t event_base, int32_t event_id, void* event_data);
 
 static spi_device_handle_t max7219_handle;
 
@@ -34,7 +34,7 @@ void x18_max7219_init(spi_host_device_t spi_host) {
     };
 
     ESP_ERROR_CHECK(spi_bus_add_device(spi_host, &devcfg, &max7219_handle));
-    ESP_ERROR_CHECK(esp_event_handler_register_with(loop_handle, EVENT_MAX7219, EVENT_WRITE, x18_max7219_handler, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_register_with(loop_handle, EVENT_MAX7219, EVENT_WRITE, max7219_handler, NULL));
 
     ESP_LOGI(TAG_MAX7219, "init complete");
 }
@@ -76,7 +76,7 @@ void x18_max7219_start(void) {
 
     esp_timer_create_args_t timercfg = {
         .name = "change_led",
-        .callback = x18_max7219_change_led,
+        .callback = max7219_change_led,
         .arg = loop_handle,
         .dispatch_method = ESP_TIMER_TASK,
     };
@@ -86,7 +86,7 @@ void x18_max7219_start(void) {
     ESP_ERROR_CHECK(esp_timer_start_periodic(timer, 100 * 1000));
 }
 
-static void x18_max7219_change_led(void* params) {
+static void max7219_change_led(void* params) {
     static uint8_t dig = 0;
     static uint8_t seg = 0;
 
@@ -102,7 +102,7 @@ static void x18_max7219_change_led(void* params) {
 
 pthread_mutex_t spi_lock = PTHREAD_MUTEX_INITIALIZER;
 
-static void x18_max7219_handler(void* event_handler_arg, esp_event_base_t event_base, int32_t event_id, void* event_data) {
+static void max7219_handler(void* event_handler_arg, esp_event_base_t event_base, int32_t event_id, void* event_data) {
     max7219_msg_t* led = event_data;
     const uint8_t buf[] = {led->addr, led->data};
 
