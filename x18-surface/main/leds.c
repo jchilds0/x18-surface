@@ -17,16 +17,13 @@ static uint8_t seg = 0;
 
 
 static void led_max7219_change(void* params) {
-    max7219_msg_t led_off = {.addr = dig + 1, .data = 0};
-    max7219_msg_t led_on = {.addr = dig + 1, .data = 1 << (seg + 2)};
+    max7219_msg_t led_on = {.addr = dig + 1, .data = 1 << seg};
 
     ESP_LOGD(TAG_LED, "updating led %x %x", led_on.addr, led_on.data);
-
-    x18_max7219_send(led_off);
     x18_max7219_send(led_on);
 
-    dig = (dig + (seg + 1) / 5) % 4;
-    seg = (seg + 1) % 5;
+    dig = (dig + (seg + 1) / 6) % 4;
+    seg = (seg + 1) % 6;
 }
 
 static void led_mcp23017_read_button(void* params) {

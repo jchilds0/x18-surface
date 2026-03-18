@@ -8,13 +8,11 @@
 
 #include "esp_event.h"
 #include "esp_err.h"
-#include "esp_timer.h"
 #include "esp_log.h"
 #include "esp_event_base.h"
 
 #include <pthread.h>
 
-static void max7219_change_led(void* params);
 static void max7219_handler(void* event_args, esp_event_base_t event_base, int32_t event_id, void* event_data);
 
 static spi_device_handle_t max7219_handle;
@@ -70,31 +68,6 @@ void x18_max7219_start(void) {
         led.data = 0x00;
         ESP_ERROR_CHECK(x18_max7219_send(led));
     }
-
-    esp_timer_create_args_t timercfg = {
-        .name = "change_led",
-        .callback = max7219_change_led,
-        .arg = loop_handle,
-        .dispatch_method = ESP_TIMER_TASK,
-    };
-
-    esp_timer_handle_t timer;
-    ESP_ERROR_CHECK(esp_timer_create(&timercfg, &timer));
-    ESP_ERROR_CHECK(esp_timer_start_periodic(timer, 100 * 1000));
-}
-
-static void max7219_change_led(void* params) {
-    static uint8_t dig = 0;
-    static uint8_t seg = 0;
-
-    max7219_msg_t led_off = {.addr = dig + 1, .data = 0};
-    max7219_msg_t led_on = {.addr = dig + 1, .data = 1 << seg};
-
-    x18_max7219_send(led_off);
-    x18_max7219_send(led_on);
-
-    dig = (dig + (seg + 1) / 6) % 4;
-    seg = (seg + 1) % 6;
 }
 
 pthread_mutex_t spi_lock = PTHREAD_MUTEX_INITIALIZER;

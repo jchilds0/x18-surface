@@ -49,7 +49,7 @@ void app_main(void) {
 
     /* initialise components */
     x18_max7219_init(spi_host);
-    x18_mcp23017_init(bus_handle);
+    //x18_mcp23017_init(bus_handle);
 
     /* start components */
     x18_max7219_start();
