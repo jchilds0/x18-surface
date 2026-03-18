@@ -76,7 +76,6 @@ typedef struct max7219_msg_s {
 } max7219_msg_t;
 
 void x18_max7219_init(spi_host_device_t spi_host);
-void x18_max7219_start();
 esp_err_t x18_max7219_send(max7219_msg_t msg);
 
 typedef struct button_s {

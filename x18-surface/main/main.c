@@ -52,7 +52,6 @@ void app_main(void) {
     //x18_mcp23017_init(bus_handle);
 
     /* start components */
-    x18_max7219_start();
     x18_led_start();
     x18_motor_start();
 

@@ -3689,6 +3689,12 @@
 		(uuid "d5e7f40f-4885-4f4c-82a5-0538c14d4d31")
 	)
 	(junction
+		(at 46.99 142.24)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "dd5a244e-7d7c-4a78-925d-1b80d0cf3f2f")
+	)
+	(junction
 		(at 129.54 88.9)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -5046,6 +5052,16 @@
 	)
 	(wire
 		(pts
+			(xy 36.83 142.24) (xy 46.99 142.24)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "5bca03ba-693d-4a1e-8431-69f41446a8db")
+	)
+	(wire
+		(pts
 			(xy 81.28 63.5) (xy 113.03 63.5)
 		)
 		(stroke
@@ -5133,6 +5149,16 @@
 			(type default)
 		)
 		(uuid "607d94f2-d110-479b-8c0f-b5c3f8792e99")
+	)
+	(wire
+		(pts
+			(xy 46.99 142.24) (xy 58.42 142.24)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "613649b4-4d55-46a9-8270-178ae1430cd9")
 	)
 	(wire
 		(pts
@@ -7126,6 +7152,72 @@
 		)
 	)
 	(symbol
+		(lib_id "power:Earth")
+		(at 46.99 149.86 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "04acd2f3-ca58-4e47-8c21-5dc167184440")
+		(property "Reference" "#PWR019"
+			(at 46.99 156.21 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "Earth"
+			(at 46.99 154.94 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 46.99 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 46.99 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"Earth\""
+			(at 46.99 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "bdbe49a5-4fbb-4896-aa81-7425acb577d0")
+		)
+		(instances
+			(project "mixer"
+				(path "/d102195a-4964-4d79-a57c-1abf3bee20c0/096db37f-e53c-4de1-ba52-3c444b492505"
+					(reference "#PWR019")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:R")
 		(at 176.53 91.44 270)
 		(unit 1)
@@ -7408,6 +7500,73 @@
 			(project "mixer"
 				(path "/d102195a-4964-4d79-a57c-1abf3bee20c0/096db37f-e53c-4de1-ba52-3c444b492505"
 					(reference "R18")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 46.99 146.05 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "09d7c95e-de31-48a7-aa13-39938f23b74d")
+		(property "Reference" "R20"
+			(at 50.546 145.796 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "1k Ohm"
+			(at 53.086 145.796 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 45.212 146.05 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 46.99 146.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 46.99 146.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "254ba071-a41b-44e6-ae3e-46f042b48404")
+		)
+		(pin "1"
+			(uuid "181021ae-9619-4592-905f-e6967a5296c1")
+		)
+		(instances
+			(project "mixer"
+				(path "/d102195a-4964-4d79-a57c-1abf3bee20c0/096db37f-e53c-4de1-ba52-3c444b492505"
+					(reference "R20")
 					(unit 1)
 				)
 			)
@@ -9591,6 +9750,72 @@
 			(project ""
 				(path "/d102195a-4964-4d79-a57c-1abf3bee20c0/096db37f-e53c-4de1-ba52-3c444b492505"
 					(reference "U6")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+5V")
+		(at 36.83 142.24 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "aaf676f3-bf1d-420d-86c2-1d635cadf433")
+		(property "Reference" "#PWR018"
+			(at 36.83 146.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "+5V"
+			(at 36.83 137.16 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 36.83 142.24 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 36.83 142.24 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+5V\""
+			(at 36.83 142.24 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "a34b6d41-22d7-4894-ac16-95f85d3a5faf")
+		)
+		(instances
+			(project "mixer"
+				(path "/d102195a-4964-4d79-a57c-1abf3bee20c0/096db37f-e53c-4de1-ba52-3c444b492505"
+					(reference "#PWR018")
 					(unit 1)
 				)
 			)
