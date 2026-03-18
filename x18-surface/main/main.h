@@ -51,6 +51,9 @@
 #define MCP23017_GPIOB            0x13
 
 #define SLEEP(ms)                 (vTaskDelay((ms) / portTICK_PERIOD_MS))
+#define I2C_TIMEOUT               1000
+#define SPI_TIMEOUT               1000
+#define EVENT_LOOP_TIMEOUT        1000
 
 ESP_EVENT_DECLARE_BASE(EVENT_MAX7219);
 ESP_EVENT_DECLARE_BASE(EVENT_MCP23017);

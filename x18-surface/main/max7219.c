@@ -2,19 +2,15 @@
  * max7219.c 
  */
 
-#include "driver/spi_master.h"
-#include "esp_event.h"
-#include "esp_event_base.h"
-#include "hal/spi_types.h"
 #include "main.h"
 
+#include "driver/spi_master.h"
+
+#include "esp_event.h"
 #include "esp_err.h"
 #include "esp_timer.h"
-
-#include "freertos/idf_additions.h"
-
 #include "esp_log.h"
-#include "portmacro.h"
+
 #include <pthread.h>
 
 static void max7219_change_led(void* params);
@@ -91,13 +87,13 @@ static void max7219_change_led(void* params) {
     static uint8_t seg = 0;
 
     max7219_msg_t led_off = {.addr = dig + 1, .data = 0};
-    max7219_msg_t led_on = {.addr = dig + 1, .data = 1 << (seg + 2)};
+    max7219_msg_t led_on = {.addr = dig + 1, .data = 1 << seg};
 
     x18_max7219_send(led_off);
     x18_max7219_send(led_on);
 
-    dig = (dig + (seg + 1) / 5) % 4;
-    seg = (seg + 1) % 5;
+    dig = (dig + (seg + 1) / 6) % 4;
+    seg = (seg + 1) % 6;
 }
 
 pthread_mutex_t spi_lock = PTHREAD_MUTEX_INITIALIZER;
@@ -122,5 +118,5 @@ static void max7219_handler(void* event_handler_arg, esp_event_base_t event_base
 }
 
 esp_err_t x18_max7219_send(max7219_msg_t msg) {
-    return esp_event_post_to(loop_handle, EVENT_MAX7219, EVENT_WRITE, &msg, sizeof(msg), portMAX_DELAY);
+    return esp_event_post_to(loop_handle, EVENT_MAX7219, EVENT_WRITE, &msg, sizeof(msg), EVENT_LOOP_TIMEOUT);
 }

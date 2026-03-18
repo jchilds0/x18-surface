@@ -11,7 +11,6 @@
 #include "esp_event.h"
 #include "esp_log.h"
 
-#include "portmacro.h"
 #include <stdint.h>
 
 static void mcp23017_write_handler(void* event_args, esp_event_base_t event_base, int32_t event_id, void* event_data);
@@ -52,14 +51,14 @@ static void mcp23017_write_handler(void* event_args, esp_event_base_t event_base
     mcp23017_msg_t* msg = event_data;
     uint8_t buf[] = {msg->reg, msg->data};
 
-    res = i2c_master_transmit(mcp23017_handle, buf, 2, portMAX_DELAY);
+    res = i2c_master_transmit(mcp23017_handle, buf, 2, I2C_TIMEOUT);
     if (res != ESP_OK) {
         ESP_LOGE(TAG_MCP23017, "error writing %x - %x: %s", msg->reg, msg->data, esp_err_to_name(res));
     }
 }
 
 esp_err_t x18_mcp23017_write(mcp23017_msg_t msg) {
-    return esp_event_post_to(loop_handle, EVENT_MCP23017, EVENT_WRITE, &msg, sizeof(msg), portMAX_DELAY);
+    return esp_event_post_to(loop_handle, EVENT_MCP23017, EVENT_WRITE, &msg, sizeof(msg), EVENT_LOOP_TIMEOUT);
 }
 
 typedef struct read_msg_s {
@@ -73,12 +72,12 @@ static void mcp23017_read_handler(void* event_args, esp_event_base_t event_base,
     read_msg_t* msg = event_data;
     mcp23017_msg_t data = {.reg = msg->reg};
 
-    res = i2c_master_transmit_receive(mcp23017_handle, &msg->reg, 1, &data.data, 1, portMAX_DELAY);
+    res = i2c_master_transmit_receive(mcp23017_handle, &msg->reg, 1, &data.data, 1, I2C_TIMEOUT);
     if (res != ESP_OK) {
         ESP_LOGE(TAG_MCP23017, "error reading %x: %s", msg->reg, esp_err_to_name(res));
     }
 
-    res = esp_event_post_to(loop_handle, msg->event_base, msg->event_id, &data, sizeof( data ), portMAX_DELAY);
+    res = esp_event_post_to(loop_handle, msg->event_base, msg->event_id, &data, sizeof( data ), EVENT_LOOP_TIMEOUT);
     if (res != ESP_OK) {
         ESP_LOGE(TAG_MCP23017, "error sending reg %x to %s %ld: %s", msg->reg, msg->event_base, msg->event_id, esp_err_to_name(res));
     }
@@ -86,6 +85,6 @@ static void mcp23017_read_handler(void* event_args, esp_event_base_t event_base,
 
 esp_err_t x18_mcp23017_read(uint8_t reg, esp_event_base_t event_base, int32_t event_id) {
     read_msg_t msg = {.reg = reg, .event_base = event_base, .event_id = event_id};
-    return esp_event_post_to(loop_handle, EVENT_MCP23017, EVENT_READ, &msg, sizeof(msg), portMAX_DELAY);
+    return esp_event_post_to(loop_handle, EVENT_MCP23017, EVENT_READ, &msg, sizeof(msg), EVENT_LOOP_TIMEOUT);
 }
 
