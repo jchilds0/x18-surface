@@ -6,7 +6,7 @@
 
 #include "esp_log.h"
 
-void x18_motor_init(void) {
+void x18_motor_start(void) {
 
 }
 

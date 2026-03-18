@@ -10,6 +10,7 @@
 #include "esp_err.h"
 #include "esp_timer.h"
 #include "esp_log.h"
+#include "esp_event_base.h"
 
 #include <pthread.h>
 
@@ -52,9 +53,9 @@ void x18_max7219_start(void) {
     SLEEP(10);
 
     max7219_msg_t conf[] = {
-        {.addr = MAX7219_SCAN_LIMIT, .data = 0x07},
+        {.addr = MAX7219_SCAN_LIMIT, .data = 0x03},
         {.addr = MAX7219_DECODE_MODE, .data = 0x00},
-        {.addr = MAX7219_INTENSITY, .data = 0x0F},
+        {.addr = MAX7219_INTENSITY, .data = 0xFF},
         {.addr = MAX7219_SHUTDOWN, .data = 0x01},
     };
 
@@ -106,6 +107,8 @@ static void max7219_handler(void* event_handler_arg, esp_event_base_t event_base
         .length = 8 * sizeof(buf),
         .tx_buffer = buf,
     };
+
+    ESP_LOGD(TAG_MAX7219, "writing %x %x", led->addr, led->data);
 
     pthread_mutex_lock(&spi_lock);
 

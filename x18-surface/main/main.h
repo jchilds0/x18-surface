@@ -23,6 +23,8 @@
 
 #define TAG_MAX7219               "[MAX7219]"
 #define TAG_MCP23017              "[MCP23017]"
+#define TAG_LED                   "[LED]"
+#define TAG_MOTOR                 "[MOTOR]"
 
 #define I2C_CLK_SRC               I2C_CLK_SRC_DEFAULT
 #define SPI_CLK_SRC               SPI_CLK_SRC_DEFAULT
@@ -51,21 +53,23 @@
 #define MCP23017_GPIOB            0x13
 
 #define SLEEP(ms)                 (vTaskDelay((ms) / portTICK_PERIOD_MS))
-#define I2C_TIMEOUT               1000
+#define I2C_TIMEOUT               10
 #define SPI_TIMEOUT               1000
 #define EVENT_LOOP_TIMEOUT        1000
 
 ESP_EVENT_DECLARE_BASE(EVENT_MAX7219);
 ESP_EVENT_DECLARE_BASE(EVENT_MCP23017);
+ESP_EVENT_DECLARE_BASE(EVENT_LED);
 
 enum {
     EVENT_WRITE,
     EVENT_READ,
+    EVENT_MCP23017_REPLY,
 };
 
 extern esp_event_loop_handle_t loop_handle;
 
-/* leds.c */
+/* max7219.c */
 typedef struct max7219_msg_s {
     uint8_t addr;
     uint8_t data;
@@ -90,13 +94,16 @@ void x18_mcp23017_init(i2c_master_bus_handle_t bus_handle);
 esp_err_t x18_mcp23017_write(mcp23017_msg_t);
 esp_err_t x18_mcp23017_read(uint8_t reg, esp_event_base_t event_base, int32_t event_id);
 
+/* leds.c */
+void x18_led_start(void);
+
 /* motors.c */
 typedef struct motor_s {
     int position;
     int target;
 } motor_t;
 
-void x18_motor_init();
+void x18_motor_start();
 void x18_motor_process(uint8_t reg, uint8_t data);
 
 #endif // !__X18_SURFACE_MAIN_H

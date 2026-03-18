@@ -11,6 +11,7 @@
 #include "esp_event.h"
 #include "esp_log.h"
 
+#include <pthread.h>
 #include <stdint.h>
 
 static void mcp23017_write_handler(void* event_args, esp_event_base_t event_base, int32_t event_id, void* event_data);
@@ -46,15 +47,23 @@ void x18_mcp23017_init(i2c_master_bus_handle_t bus_handle) {
     ESP_LOGI(TAG_MCP23017, "init complete");
 }
 
+pthread_mutex_t i2c_lock = PTHREAD_MUTEX_INITIALIZER;
+
 static void mcp23017_write_handler(void* event_args, esp_event_base_t event_base, int32_t event_id, void* event_data) {
     esp_err_t res;
     mcp23017_msg_t* msg = event_data;
     uint8_t buf[] = {msg->reg, msg->data};
 
+    ESP_LOGD(TAG_MAX7219, "writing %x %x", msg->reg, msg->data);
+
+    pthread_mutex_lock(&i2c_lock);
+
     res = i2c_master_transmit(mcp23017_handle, buf, 2, I2C_TIMEOUT);
     if (res != ESP_OK) {
         ESP_LOGE(TAG_MCP23017, "error writing %x - %x: %s", msg->reg, msg->data, esp_err_to_name(res));
     }
+
+    pthread_mutex_unlock(&i2c_lock);
 }
 
 esp_err_t x18_mcp23017_write(mcp23017_msg_t msg) {
@@ -72,14 +81,26 @@ static void mcp23017_read_handler(void* event_args, esp_event_base_t event_base,
     read_msg_t* msg = event_data;
     mcp23017_msg_t data = {.reg = msg->reg};
 
+    ESP_LOGD(TAG_MAX7219, "reading %x", msg->reg);
+
+    pthread_mutex_lock(&i2c_lock);
+
     res = i2c_master_transmit_receive(mcp23017_handle, &msg->reg, 1, &data.data, 1, I2C_TIMEOUT);
     if (res != ESP_OK) {
         ESP_LOGE(TAG_MCP23017, "error reading %x: %s", msg->reg, esp_err_to_name(res));
     }
 
+    pthread_mutex_unlock(&i2c_lock);
+
+    ESP_LOGD(TAG_MAX7219, "sending read %x %x to %s %ld", 
+        msg->reg, data.data, msg->event_base, msg->event_id
+    );
+
     res = esp_event_post_to(loop_handle, msg->event_base, msg->event_id, &data, sizeof( data ), EVENT_LOOP_TIMEOUT);
     if (res != ESP_OK) {
-        ESP_LOGE(TAG_MCP23017, "error sending reg %x to %s %ld: %s", msg->reg, msg->event_base, msg->event_id, esp_err_to_name(res));
+        ESP_LOGE(TAG_MCP23017, "error sending reg %x to %s %ld: %s", 
+            msg->reg, msg->event_base, msg->event_id, esp_err_to_name(res)
+        );
     }
 }
 

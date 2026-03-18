@@ -7,6 +7,7 @@
 
 #include "driver/i2c_master.h"
 #include "esp_event_base.h"
+#include "esp_log_level.h"
 #include "freertos/idf_additions.h"
 
 #include <esp_timer.h>
@@ -16,7 +17,7 @@ esp_event_loop_handle_t loop_handle;
 
 void app_main(void) {
     esp_event_loop_args_t loop_args = {
-        .queue_size = 1,
+        .queue_size = 16,
         .task_name = "main loop",
         .task_priority = tskIDLE_PRIORITY,
         .task_stack_size = STACK_SIZE,
@@ -49,10 +50,11 @@ void app_main(void) {
     /* initialise components */
     x18_max7219_init(spi_host);
     x18_mcp23017_init(bus_handle);
-    x18_motor_init();
 
     /* start components */
     x18_max7219_start();
+    x18_led_start();
+    x18_motor_start();
 
     for (;;) {
         SLEEP(1000);
