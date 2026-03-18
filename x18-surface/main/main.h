@@ -48,9 +48,19 @@
 #define MCP23017_DEVICE_ADDR      0x20
 #define MCP23017_IODIRA           0x00
 #define MCP23017_IODIRB           0x01
+#define MCP23017_IPOLA            0x02
+#define MCP23017_IPOLB            0x03
+#define MCP23017_GPINTENA         0x04
+#define MCP23017_GPINTENB         0x05
+#define MCP23017_INTCONA          0x08
+#define MCP23017_INTCONB          0x09
 #define MCP23017_IOCON            0x0a
+#define MCP23017_GPPUA            0x0c
+#define MCP23017_GPPUB            0x0d
 #define MCP23017_GPIOA            0x12
 #define MCP23017_GPIOB            0x13
+
+#define MCP23017_INTR_B           GPIO_NUM_35
 
 #define SLEEP(ms)                 (vTaskDelay((ms) / portTICK_PERIOD_MS))
 #define I2C_TIMEOUT               10
@@ -91,7 +101,7 @@ typedef struct mcp23017_msg_s {
 
 void x18_mcp23017_init(i2c_master_bus_handle_t bus_handle);
 esp_err_t x18_mcp23017_write(mcp23017_msg_t);
-esp_err_t x18_mcp23017_read(uint8_t reg, esp_event_base_t event_base, int32_t event_id);
+esp_err_t x18_mcp23017_read(uint8_t reg, mcp23017_msg_t *msg);
 
 /* leds.c */
 void x18_led_start(void);
